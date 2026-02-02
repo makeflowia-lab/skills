@@ -115,6 +115,10 @@ export async function promptForAgents(
 
   const validAgents = choices.map((c) => c.value);
 
+  // Default agents to pre-select when no valid history exists
+  const defaultAgents: AgentType[] = ['claude-code', 'opencode', 'codex'];
+  const defaultValues = defaultAgents.filter((a) => validAgents.includes(a));
+
   let initialValues: AgentType[] = [];
 
   if (lastSelected && lastSelected.length > 0) {
@@ -122,10 +126,16 @@ export async function promptForAgents(
     initialValues = lastSelected.filter((a) => validAgents.includes(a as AgentType)) as AgentType[];
   }
 
+  // If no valid selection from history, use defaults
+  if (initialValues.length === 0) {
+    initialValues = defaultValues;
+  }
+
   const selected = await searchMultiselect({
     message,
     items: choices,
     initialSelected: initialValues,
+    required: true,
   });
 
   if (!isCancelled(selected)) {

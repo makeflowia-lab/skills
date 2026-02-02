@@ -20,6 +20,8 @@ export interface SearchMultiselectOptions<T> {
   items: SearchItem<T>[];
   maxVisible?: number;
   initialSelected?: T[];
+  /** If true, require at least one item to be selected before submitting */
+  required?: boolean;
 }
 
 const S_STEP_ACTIVE = pc.green('◆');
@@ -38,7 +40,7 @@ export const cancelSymbol = Symbol('cancel');
 export async function searchMultiselect<T>(
   options: SearchMultiselectOptions<T>
 ): Promise<T[] | symbol> {
-  const { message, items, maxVisible = 8, initialSelected = [] } = options;
+  const { message, items, maxVisible = 8, initialSelected = [], required = false } = options;
 
   return new Promise((resolve) => {
     const rl = readline.createInterface({
@@ -177,6 +179,10 @@ export async function searchMultiselect<T>(
     };
 
     const submit = (): void => {
+      // If required, don't allow submitting with no selection
+      if (required && selected.size === 0) {
+        return;
+      }
       render('submit');
       cleanup();
       resolve(Array.from(selected));

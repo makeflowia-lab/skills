@@ -26,15 +26,16 @@ describe('promptForAgents', () => {
     vi.clearAllMocks();
   });
 
-  it('should use empty initial selection when no history exists', async () => {
+  it('should use default agents (claude-code, opencode, codex) when no history exists', async () => {
     vi.mocked(skillLock.getLastSelectedAgents).mockResolvedValue(undefined);
     vi.mocked(searchMultiselectModule.searchMultiselect).mockResolvedValue(['opencode']);
 
     await promptForAgents('Select agents', choices);
 
+    // Should default to claude-code, opencode, codex (filtered by available choices)
     expect(searchMultiselectModule.searchMultiselect).toHaveBeenCalledWith(
       expect.objectContaining({
-        initialSelected: [],
+        initialSelected: ['claude-code', 'opencode'],
       })
     );
   });
@@ -65,15 +66,17 @@ describe('promptForAgents', () => {
     );
   });
 
-  it('should use empty list if all history agents are invalid', async () => {
+  it('should use default agents if all history agents are invalid', async () => {
     vi.mocked(skillLock.getLastSelectedAgents).mockResolvedValue(['invalid-agent']);
     vi.mocked(searchMultiselectModule.searchMultiselect).mockResolvedValue(['opencode']);
 
     await promptForAgents('Select agents', choices);
 
+    // When history is invalid, should fall back to defaults (claude-code, opencode, codex)
+    // filtered by available choices
     expect(searchMultiselectModule.searchMultiselect).toHaveBeenCalledWith(
       expect.objectContaining({
-        initialSelected: [],
+        initialSelected: ['claude-code', 'opencode'],
       })
     );
   });
